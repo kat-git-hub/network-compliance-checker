@@ -1,0 +1,36 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check ssh_root_compliant fact is defined
+      assert:
+        that:
+          - ssh_root_compliant is defined
+        fail_msg: "ssh_root_compliant fact is not set"
+
+    - name: Check ssh_protocol_compliant fact is defined
+      assert:
+        that:
+          - ssh_protocol_compliant is defined
+        fail_msg: "ssh_protocol_compliant fact is not set"
+
+    - name: Check ntp_compliant fact is defined
+      assert:
+        that:
+          - ntp_compliant is defined
+        fail_msg: "ntp_compliant fact is not set"
+
+    - name: Check ftp_compliant fact is defined
+      assert:
+        that:
+          - ftp_compliant is defined
+        fail_msg: "ftp_compliant fact is not set"
+
+    - name: Verify compliant instance passes NTP check
+      assert:
+        that:
+          - ntp_compliant == true
+        fail_msg: "NTP should be compliant on test instance"

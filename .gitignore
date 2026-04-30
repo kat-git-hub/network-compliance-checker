@@ -3,4 +3,5 @@ reports/
 .molecule/
 __pycache__/
 *.pyc
-.pytest_cache/
+.pytest_cache/.ansible/
+*.log

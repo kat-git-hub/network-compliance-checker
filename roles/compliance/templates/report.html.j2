@@ -28,7 +28,7 @@
   {% set total = namespace(pass=0, fail=0) %}
   {% for host in ansible_play_hosts %}
     {% set h = hostvars[host] %}
-    {% if h.ssh_root_compliant and h.ssh_protocol_compliant and h.ntp_compliant and h.ftp_compliant %}
+    {% if h.compliance_ssh_root_compliant and h.compliance_ssh_protocol_compliant and h.compliance_ntp_compliant and h.compliance_ftp_compliant %}
       {% set total.pass = total.pass + 1 %}
     {% else %}
       {% set total.fail = total.fail + 1 %}
@@ -57,13 +57,13 @@
     </tr>
     {% for host in ansible_play_hosts %}
     {% set h = hostvars[host] %}
-    {% set compliant = h.ssh_root_compliant and h.ssh_protocol_compliant and h.ntp_compliant and h.ftp_compliant %}
+    {% set compliant = h.compliance_ssh_root_compliant and h.compliance_ssh_protocol_compliant and h.compliance_ntp_compliant and h.compliance_ftp_compliant %}
     <tr>
       <td><strong>{{ host }}</strong></td>
-      <td class="{{ 'pass' if h.ssh_root_compliant else 'fail' }}">{{ '✓' if h.ssh_root_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.ssh_protocol_compliant else 'fail' }}">{{ '✓' if h.ssh_protocol_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.ntp_compliant else 'fail' }}">{{ '✓' if h.ntp_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.ftp_compliant else 'fail' }}">{{ '✓' if h.ftp_compliant else '✗' }}</td>
+      <td class="{{ 'pass' if h.compliance_ssh_root_compliant else 'fail' }}">{{ '✓' if h.compliance_ssh_root_compliant else '✗' }}</td>
+      <td class="{{ 'pass' if h.compliance_ssh_protocol_compliant else 'fail' }}">{{ '✓' if h.compliance_ssh_protocol_compliant else '✗' }}</td>
+      <td class="{{ 'pass' if h.compliance_ntp_compliant else 'fail' }}">{{ '✓' if h.compliance_ntp_compliant else '✗' }}</td>
+      <td class="{{ 'pass' if h.compliance_ftp_compliant else 'fail' }}">{{ '✓' if h.compliance_ftp_compliant else '✗' }}</td>
       <td class="{{ 'pass' if compliant else 'fail' }}">{{ 'PASS' if compliant else 'FAIL' }}</td>
     </tr>
     {% endfor %}
