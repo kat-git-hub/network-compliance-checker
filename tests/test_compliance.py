@@ -4,83 +4,90 @@ Verifies that devices meet security policy requirements.
 """
 import pytest
 
+SSHD_CONFIG = "/etc/ssh/sshd_config"
+NTP_PACKAGE = "chrony"
+FTP_PACKAGE = "vsftpd"
+SSH_SERVICE = "ssh"
+
 
 class TestSSHCompliance:
     """SSH security policy checks."""
 
-    def test_router01_no_root_login(self, router01):
-        """router-01 should have PermitRootLogin no."""
-        sshd_config = router01.file("/etc/ssh/sshd_config")
-        assert sshd_config.contains("PermitRootLogin no")
+    def test_permit_root_login(self, device_name, device_config, all_hosts):
+        """PermitRootLogin must match expected policy per device."""
+        host = all_hosts[device_name]
+        config = host.file(SSHD_CONFIG)
+        if device_config["permit_root_login"]:
+            assert config.contains("PermitRootLogin yes"), (
+                f"{device_name}: expected PermitRootLogin yes (known violation)"
+            )
+        else:
+            assert config.contains("PermitRootLogin no"), (
+                f"{device_name}: expected PermitRootLogin no"
+            )
 
-    def test_switch02_root_login_violation(self, switch02):
-        """switch-02 should have PermitRootLogin yes — known violation."""
-        sshd_config = switch02.file("/etc/ssh/sshd_config")
-        assert sshd_config.contains("PermitRootLogin yes")
+    def test_ssh_protocol2(self, device_name, device_config, all_hosts):
+        """Protocol 2 must be explicitly set where required."""
+        host = all_hosts[device_name]
+        config = host.file(SSHD_CONFIG)
+        if device_config["ssh_protocol2"]:
+            assert config.contains("Protocol 2"), (
+                f"{device_name}: Protocol 2 should be set"
+            )
+        else:
+            assert not config.contains("Protocol 2"), (
+                f"{device_name}: Protocol 2 not expected"
+            )
 
-    def test_firewall01_root_login_violation(self, firewall01):
-        """firewall-01 should have PermitRootLogin yes — known violation."""
-        sshd_config = firewall01.file("/etc/ssh/sshd_config")
-        assert sshd_config.contains("PermitRootLogin yes")
-
-    def test_router01_ssh_protocol2(self, router01):
-        """router-01 should have Protocol 2 explicitly set."""
-        sshd_config = router01.file("/etc/ssh/sshd_config")
-        assert sshd_config.contains("Protocol 2")
+    def test_ssh_service_running(self, device_name, device_config, all_hosts):
+        """SSH service must be running on all devices."""
+        host = all_hosts[device_name]
+        assert host.service(SSH_SERVICE).is_running, (
+            f"{device_name}: SSH service should be running"
+        )
 
 
 class TestNTPCompliance:
     """NTP configuration checks."""
 
-    def test_router01_chrony_installed(self, router01):
-        """router-01 should have chrony installed."""
-        chrony = router01.package("chrony")
-        assert chrony.is_installed
-
-    def test_router02_chrony_missing(self, router02):
-        """router-02 should NOT have chrony — known violation."""
-        chrony = router02.package("chrony")
-        assert not chrony.is_installed
-
-    def test_switch01_chrony_installed(self, switch01):
-        """switch-01 should have chrony installed."""
-        chrony = switch01.package("chrony")
-        assert chrony.is_installed
-
-    def test_firewall01_chrony_missing(self, firewall01):
-        """firewall-01 should NOT have chrony — known violation."""
-        chrony = firewall01.package("chrony")
-        assert not chrony.is_installed
+    def test_chrony_installed(self, device_name, device_config, all_hosts):
+        """Chrony must be installed where required."""
+        host = all_hosts[device_name]
+        package = host.package(NTP_PACKAGE)
+        if device_config["ntp_installed"]:
+            assert package.is_installed, (
+                f"{device_name}: chrony should be installed"
+            )
+        else:
+            assert not package.is_installed, (
+                f"{device_name}: chrony should NOT be installed (known violation)"
+            )
 
 
 class TestForbiddenServices:
     """Forbidden services checks."""
 
-    def test_router01_no_ftp(self, router01):
-        """router-01 should NOT have vsftpd installed."""
-        vsftpd = router01.package("vsftpd")
-        assert not vsftpd.is_installed
-
-    def test_switch01_ftp_violation(self, switch01):
-        """switch-01 should have vsftpd — known violation."""
-        vsftpd = switch01.package("vsftpd")
-        assert vsftpd.is_installed
-
-    def test_firewall01_ftp_violation(self, firewall01):
-        """firewall-01 should have vsftpd — known violation."""
-        vsftpd = firewall01.package("vsftpd")
-        assert vsftpd.is_installed
-
-    def test_router01_ssh_running(self, router01):
-        """SSH service should be running on router-01."""
-        ssh = router01.service("ssh")
-        assert ssh.is_running
+    def test_ftp_not_installed(self, device_name, device_config, all_hosts):
+        """vsftpd must not be installed where forbidden."""
+        host = all_hosts[device_name]
+        package = host.package(FTP_PACKAGE)
+        if device_config["ftp_installed"]:
+            assert package.is_installed, (
+                f"{device_name}: vsftpd present (known violation)"
+            )
+        else:
+            assert not package.is_installed, (
+                f"{device_name}: vsftpd should NOT be installed"
+            )
 
 
 class TestCompliantDevice:
-    """Full compliance check for router-01 — should pass all policies."""
+    """Full compliance check — router-01 should pass all policies."""
 
-    def test_router01_fully_compliant(self, router01):
-        assert router01.file("/etc/ssh/sshd_config").contains("PermitRootLogin no")
-        assert router01.package("chrony").is_installed
-        assert not router01.package("vsftpd").is_installed
+    def test_router01_fully_compliant(self, all_hosts):
+        host = all_hosts["router-01"]
+        assert host.file(SSHD_CONFIG).contains("PermitRootLogin no")
+        assert host.file(SSHD_CONFIG).contains("Protocol 2")
+        assert host.package(NTP_PACKAGE).is_installed
+        assert not host.package(FTP_PACKAGE).is_installed
+        assert host.service(SSH_SERVICE).is_running

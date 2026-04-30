@@ -24,4 +24,5 @@ testinfra = "^6.0.0"
 pytest-testinfra = "^10.2.2"
 paramiko = "^4.0.0"
 ansible-lint = "^26.4.0"
+pytest-cov = "^7.1.0"
 
