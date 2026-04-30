@@ -22,7 +22,7 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-root
 
       - name: Run ansible-lint
         run: poetry run ansible-lint roles/
@@ -43,7 +43,7 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-root
 
       - name: Generate SSH key
         run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
