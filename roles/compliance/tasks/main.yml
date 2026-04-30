@@ -1,0 +1,9 @@
+---
+- name: Check SSH configuration
+  include_tasks: check_ssh.yml
+
+- name: Check NTP configuration
+  include_tasks: check_ntp.yml
+
+- name: Check forbidden services
+  include_tasks: check_services.yml

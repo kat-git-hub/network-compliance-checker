@@ -1,0 +1,4 @@
+---
+compliance_report_dir: "{{ playbook_dir }}/reports"
+compliance_report_html: "{{ compliance_report_dir }}/report.html"
+compliance_report_json: "{{ compliance_report_dir }}/report.json"

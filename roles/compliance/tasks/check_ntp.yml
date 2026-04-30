@@ -1,0 +1,10 @@
+---
+- name: Check if chrony is installed
+  command: which chronyd
+  register: chrony_check
+  changed_when: false
+  failed_when: false
+
+- name: Set NTP compliance
+  set_fact:
+    ntp_compliant: "{{ chrony_check.rc == 0 }}"

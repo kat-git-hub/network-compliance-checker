@@ -1,0 +1,10 @@
+---
+- name: Check if vsftpd is installed
+  command: which vsftpd
+  register: ftp_check
+  changed_when: false
+  failed_when: false
+
+- name: Set FTP compliance
+  set_fact:
+    ftp_compliant: "{{ ftp_check.rc != 0 }}"

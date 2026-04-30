@@ -1,0 +1,41 @@
+---
+- name: Network Compliance Check
+  hosts: network_devices
+  become: true
+  gather_facts: true
+
+  roles:
+    - compliance
+
+- name: Generate Reports
+  hosts: network_devices
+  gather_facts: false
+  become: false
+
+  post_tasks:
+    - name: Create reports directory
+      local_action:
+        module: file
+        path: "{{ playbook_dir }}/reports"
+        state: directory
+      run_once: true
+
+    - name: Generate HTML report
+      local_action:
+        module: template
+        src: roles/compliance/templates/report.html.j2
+        dest: "{{ playbook_dir }}/reports/report.html"
+      run_once: true
+
+    - name: Generate JSON report
+      local_action:
+        module: copy
+        content: |
+          {{ ansible_play_hosts | map('extract', hostvars) | list | to_nice_json }}
+        dest: "{{ playbook_dir }}/reports/report.json"
+      run_once: true
+
+    - name: Show report location
+      debug:
+        msg: "Reports saved to {{ playbook_dir }}/reports/"
+      run_once: true
