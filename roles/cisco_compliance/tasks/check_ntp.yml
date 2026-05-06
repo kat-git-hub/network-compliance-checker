@@ -1,0 +1,11 @@
+---
+- name: Get NTP configuration
+  cisco.ios.ios_command:
+    commands:
+      - show running-config | include ntp
+  register: cisco_compliance_compliance_ntp_config
+
+- name: Set NTP compliance
+  ansible.builtin.set_fact:
+    cisco_compliance_ntp_compliant: >-
+      {{ 'ntp server' in cisco_ntp_config.stdout[0] }}

@@ -1,0 +1,22 @@
+---
+- name: Get password encryption status
+  cisco.ios.ios_command:
+    commands:
+      - show running-config | include service password-encryption
+  register: cisco_compliance_compliance_pwd_config
+
+- name: Set password encryption compliance
+  ansible.builtin.set_fact:
+    cisco_compliance_password_encryption_compliant: >-
+      {{ 'service password-encryption' in cisco_pwd_config.stdout[0] }}
+
+- name: Get login configuration
+  cisco.ios.ios_command:
+    commands:
+      - show running-config | include login local
+  register: cisco_compliance_compliance_login_config
+
+- name: Set login local compliance
+  ansible.builtin.set_fact:
+    cisco_compliance_login_compliant: >-
+      {{ 'login local' in cisco_login_config.stdout[0] }}

@@ -1,0 +1,20 @@
+---
+# Network Compliance Policies
+# Edit this file to define your own compliance requirements
+
+ssh:
+  permit_root_login: false
+  protocol_version: 2
+  max_login_grace_time: 300
+
+ntp:
+  required: true
+  package: chrony
+
+forbidden_services:
+  - vsftpd
+  - telnet
+  - rsh
+
+required_services:
+  - ssh

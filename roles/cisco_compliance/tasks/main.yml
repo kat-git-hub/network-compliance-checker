@@ -1,0 +1,9 @@
+---
+- name: Check SSH configuration
+  ansible.builtin.include_tasks: check_ssh.yml
+
+- name: Check NTP configuration
+  ansible.builtin.include_tasks: check_ntp.yml
+
+- name: Check security settings
+  ansible.builtin.include_tasks: check_security.yml

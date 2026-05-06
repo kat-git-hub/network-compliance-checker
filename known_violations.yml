@@ -1,0 +1,22 @@
+---
+# Known policy violations per device.
+# Document why each violation exists and when it should be fixed.
+# Once fixed — remove from this file and re-run tests.
+
+known_violations:
+  switch-02:
+    - check: permit_root_login
+      reason: "Legacy config — ticket #42, fix planned Q3"
+  firewall-01:
+    - check: permit_root_login
+      reason: "Legacy config — ticket #42, fix planned Q3"
+    - check: ntp_missing
+      reason: "chrony not yet deployed — ticket #51"
+    - check: ftp_installed
+      reason: "vsftpd needed for legacy backup — ticket #55"
+  router-02:
+    - check: ntp_missing
+      reason: "chrony not yet deployed — ticket #51"
+  switch-01:
+    - check: ftp_installed
+      reason: "vsftpd needed for legacy transfer — ticket #55"

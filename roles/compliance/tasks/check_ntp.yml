@@ -1,10 +1,12 @@
 ---
-- name: Check if chrony is installed
+- name: Check if NTP package is installed
   ansible.builtin.command: which chronyd
   register: compliance_chrony_check
   changed_when: false
   failed_when: false
+  when: ntp.required
 
 - name: Set NTP compliance
   ansible.builtin.set_fact:
-    compliance_ntp_compliant: "{{ compliance_chrony_check.rc == 0 }}"
+    compliance_ntp_compliant: "{{ compliance_chrony_check.rc == 0 if ntp.required else true }}"
+  when: ntp.required

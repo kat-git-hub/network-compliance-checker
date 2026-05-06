@@ -1,0 +1,9 @@
+---
+- name: Cisco IOS Compliance Check
+  hosts: cisco_devices
+  gather_facts: false
+  vars_files:
+    - policies.yml
+
+  roles:
+    - cisco_compliance

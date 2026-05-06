@@ -19,6 +19,7 @@
     .card p { margin: 4px 0 0; color: #666; }
     .green h2 { color: #27ae60; }
     .red h2 { color: #e74c3c; }
+    .legend { margin-top: 20px; color: #666; font-size: 0.9em; }
   </style>
 </head>
 <body>
@@ -28,7 +29,8 @@
   {% set total = namespace(pass=0, fail=0) %}
   {% for host in ansible_play_hosts %}
     {% set h = hostvars[host] %}
-    {% if h.compliance_ssh_root_compliant and h.compliance_ssh_protocol_compliant and h.compliance_ntp_compliant and h.compliance_ftp_compliant %}
+    {% set forbidden_ok = h.compliance_forbidden_services.values() | list | min %}
+    {% if h.compliance_ssh_root_compliant and h.compliance_ssh_protocol_compliant and h.compliance_ntp_compliant and forbidden_ok %}
       {% set total.pass = total.pass + 1 %}
     {% else %}
       {% set total.fail = total.fail + 1 %}
@@ -49,24 +51,41 @@
   <table>
     <tr>
       <th>Device</th>
-      <th>SSH Root Login</th>
+      <th>Root Login</th>
       <th>SSH Protocol 2</th>
-      <th>NTP (chrony)</th>
-      <th>No FTP</th>
+      <th>NTP ({{ ntp.package }})</th>
+      {% for svc in forbidden_services %}
+      <th>{{ svc }}</th>
+      {% endfor %}
       <th>Status</th>
     </tr>
     {% for host in ansible_play_hosts %}
     {% set h = hostvars[host] %}
-    {% set compliant = h.compliance_ssh_root_compliant and h.compliance_ssh_protocol_compliant and h.compliance_ntp_compliant and h.compliance_ftp_compliant %}
+    {% set forbidden_ok = h.compliance_forbidden_services.values() | list | min %}
+    {% set compliant = h.compliance_ssh_root_compliant and h.compliance_ssh_protocol_compliant and h.compliance_ntp_compliant and forbidden_ok %}
     <tr>
       <td><strong>{{ host }}</strong></td>
-      <td class="{{ 'pass' if h.compliance_ssh_root_compliant else 'fail' }}">{{ '✓' if h.compliance_ssh_root_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.compliance_ssh_protocol_compliant else 'fail' }}">{{ '✓' if h.compliance_ssh_protocol_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.compliance_ntp_compliant else 'fail' }}">{{ '✓' if h.compliance_ntp_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.compliance_ftp_compliant else 'fail' }}">{{ '✓' if h.compliance_ftp_compliant else '✗' }}</td>
+      <td class="{{ 'pass' if h.compliance_ssh_root_compliant else 'fail' }}">
+        {{ '✓ disabled' if h.compliance_ssh_root_compliant else '✗ enabled' }}
+      </td>
+      <td class="{{ 'pass' if h.compliance_ssh_protocol_compliant else 'fail' }}">
+        {{ '✓ enforced' if h.compliance_ssh_protocol_compliant else '✗ missing' }}
+      </td>
+      <td class="{{ 'pass' if h.compliance_ntp_compliant else 'fail' }}">
+        {{ '✓ installed' if h.compliance_ntp_compliant else '✗ missing' }}
+      </td>
+      {% for svc in forbidden_services %}
+      <td class="{{ 'fail' if not h.compliance_forbidden_services[svc] else 'pass' }}">
+        {{ '✗ found' if not h.compliance_forbidden_services[svc] else '✓ absent' }}
+      </td>
+      {% endfor %}
       <td class="{{ 'pass' if compliant else 'fail' }}">{{ 'PASS' if compliant else 'FAIL' }}</td>
     </tr>
     {% endfor %}
   </table>
+
+  <p class="legend">
+    Forbidden services columns (dark red): ✓ absent = compliant, ✗ found = violation
+  </p>
 </body>
 </html>

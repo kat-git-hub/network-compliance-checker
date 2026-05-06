@@ -7,7 +7,10 @@
 
 - name: Set SSH root login compliance
   ansible.builtin.set_fact:
-    compliance_ssh_root_compliant: "{{ 'no' in compliance_root_login_check.stdout | lower }}"
+    compliance_ssh_root_compliant: >-
+      {{ 'yes' not in compliance_root_login_check.stdout | lower
+         if not ssh.permit_root_login
+         else 'yes' in compliance_root_login_check.stdout | lower }}
 
 - name: Check SSH Protocol
   ansible.builtin.command: grep -i "Protocol" /etc/ssh/sshd_config
@@ -17,4 +20,5 @@
 
 - name: Set SSH protocol compliance
   ansible.builtin.set_fact:
-    compliance_ssh_protocol_compliant: "{{ '2' in compliance_protocol_check.stdout }}"
+    compliance_ssh_protocol_compliant: >-
+      {{ compliance_protocol_check.stdout | regex_search('Protocol\\s+' + ssh.protocol_version | string) is not none }}

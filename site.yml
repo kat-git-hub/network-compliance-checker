@@ -3,6 +3,8 @@
   hosts: network_devices
   become: true
   gather_facts: true
+  vars_files:
+    - policies.yml
 
   roles:
     - compliance
@@ -11,6 +13,8 @@
   hosts: network_devices
   gather_facts: false
   become: false
+  vars_files:
+    - policies.yml
 
   post_tasks:
     - name: Create reports directory
@@ -36,6 +40,6 @@
       run_once: true
 
     - name: Show report location
-      debug:
+      ansible.builtin.debug:
         msg: "Reports saved to {{ playbook_dir }}/reports/"
       run_once: true

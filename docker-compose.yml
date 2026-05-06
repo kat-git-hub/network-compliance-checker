@@ -9,7 +9,7 @@ services:
     command: >
       bash -c "
         apt-get update -qq &&
-        apt-get install -y -qq openssh-server sudo python3 chrony &&
+        apt-get install -y openssh-server sudo python3 chrony &&
         useradd -m -s /bin/bash ubuntu &&
         usermod -aG sudo ubuntu &&
         echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
@@ -35,7 +35,7 @@ services:
     command: >
       bash -c "
         apt-get update -qq &&
-        apt-get install -y -qq openssh-server sudo python3 &&
+        apt-get install -y openssh-server sudo python3 &&
         useradd -m -s /bin/bash ubuntu &&
         usermod -aG sudo ubuntu &&
         echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
@@ -59,7 +59,7 @@ services:
     command: >
       bash -c "
         apt-get update -qq &&
-        apt-get install -y -qq openssh-server sudo python3 chrony vsftpd &&
+        apt-get install -y openssh-server sudo python3 chrony vsftpd &&
         useradd -m -s /bin/bash ubuntu &&
         usermod -aG sudo ubuntu &&
         echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
@@ -83,7 +83,7 @@ services:
     command: >
       bash -c "
         apt-get update -qq &&
-        apt-get install -y -qq openssh-server sudo python3 chrony &&
+        apt-get install -y openssh-server sudo python3 chrony &&
         useradd -m -s /bin/bash ubuntu &&
         usermod -aG sudo ubuntu &&
         echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
@@ -107,7 +107,7 @@ services:
     command: >
       bash -c "
         apt-get update -qq &&
-        apt-get install -y -qq openssh-server sudo python3 vsftpd &&
+        apt-get install -y openssh-server sudo python3 vsftpd &&
         useradd -m -s /bin/bash ubuntu &&
         usermod -aG sudo ubuntu &&
         echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&

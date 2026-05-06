@@ -1,10 +1,20 @@
 ---
-- name: Check if vsftpd is installed
-  ansible.builtin.command: which vsftpd
-  register: compliance_ftp_check
+- name: Check forbidden services
+  ansible.builtin.command: which {{ item }}
+  register: compliance_forbidden_results
+  loop: "{{ forbidden_services }}"
   changed_when: false
   failed_when: false
 
-- name: Set FTP compliance
+- name: Set compliance per forbidden service
   ansible.builtin.set_fact:
-    compliance_ftp_compliant: "{{ compliance_ftp_check.rc != 0 }}"
+    compliance_forbidden_services: >-
+      {{ compliance_forbidden_services | default({}) | combine({
+        item.item: item.rc != 0
+      }) }}
+  loop: "{{ compliance_forbidden_results.results }}"
+
+- name: Set overall forbidden services compliance
+  ansible.builtin.set_fact:
+    compliance_ftp_compliant: >-
+      {{ compliance_forbidden_services.values() | list | min }}
