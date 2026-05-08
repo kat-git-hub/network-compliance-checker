@@ -7,3 +7,28 @@
 
   roles:
     - cisco_compliance
+
+- name: Generate Cisco Reports
+  hosts: cisco_devices
+  gather_facts: false
+  become: false
+
+  post_tasks:
+    - name: Create reports directory
+      local_action:
+        module: file
+        path: "{{ playbook_dir }}/reports"
+        state: directory
+      run_once: true
+
+    - name: Generate Cisco HTML report
+      local_action:
+        module: template
+        src: roles/cisco_compliance/templates/cisco_report.html.j2
+        dest: "{{ playbook_dir }}/reports/cisco_report.html"
+      run_once: true
+
+    - name: Show report location
+      ansible.builtin.debug:
+        msg: "Cisco report saved to {{ playbook_dir }}/reports/cisco_report.html"
+      run_once: true
