@@ -1,0 +1,54 @@
+---
+- name: Linux Compliance Check
+  hosts: network_devices
+  become: true
+  gather_facts: true
+  vars_files:
+    - policies.yml
+
+  roles:
+    - compliance
+
+- name: Cisco IOS Compliance Check
+  hosts: cisco_devices
+  gather_facts: false
+  vars_files:
+    - policies.yml
+
+  roles:
+    - cisco_compliance
+
+- name: Generate Combined Report
+  hosts: network_devices
+  gather_facts: false
+  become: false
+  vars_files:
+    - policies.yml
+
+  post_tasks:
+    - name: Create reports directory
+      local_action:
+        module: file
+        path: "{{ playbook_dir }}/reports"
+        state: directory
+      run_once: true
+
+    - name: Generate combined HTML report
+      local_action:
+        module: template
+        src: templates/full_report.html.j2
+        dest: "{{ playbook_dir }}/reports/full_report.html"
+      run_once: true
+
+    - name: Generate JSON report
+      local_action:
+        module: copy
+        content: |
+          {{ (ansible_play_hosts + groups['cisco_devices']) | map('extract', hostvars) | list | to_nice_json }}
+        dest: "{{ playbook_dir }}/reports/report.json"
+      run_once: true
+
+    - name: Show report location
+      ansible.builtin.debug:
+        msg: "Full report saved to {{ playbook_dir }}/reports/full_report.html"
+      run_once: true

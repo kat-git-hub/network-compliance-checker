@@ -7,3 +7,12 @@
 
 - name: Check security settings
   ansible.builtin.include_tasks: check_security.yml
+
+- name: Check logging configuration
+  ansible.builtin.include_tasks: check_logging.yml
+
+- name: Check banner configuration
+  ansible.builtin.include_tasks: check_banner.yml
+
+- name: Check ACL configuration
+  ansible.builtin.include_tasks: check_acl.yml

@@ -1,0 +1,11 @@
+---
+- name: Get logging configuration
+  cisco.ios.ios_command:
+    commands:
+      - show running-config | include logging
+  register: cisco_compliance_logging_config
+
+- name: Set logging compliance
+  ansible.builtin.set_fact:
+    cisco_compliance_logging_compliant: >-
+      {{ 'logging host' in cisco_compliance_logging_config.stdout[0] }}

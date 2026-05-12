@@ -45,3 +45,9 @@ all: up
 clean:
 	docker compose down
 	rm -rf reports/*.html reports/*.json reports/coverage
+
+full-run:
+	poetry run ansible-playbook -i hosts.ini full_site.yml
+
+full-report:
+	open reports/full_report.html

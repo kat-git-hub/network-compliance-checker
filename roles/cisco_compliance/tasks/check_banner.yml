@@ -1,0 +1,11 @@
+---
+- name: Get banner configuration
+  cisco.ios.ios_command:
+    commands:
+      - show running-config | include banner
+  register: cisco_compliance_banner_config
+
+- name: Set banner compliance
+  ansible.builtin.set_fact:
+    cisco_compliance_banner_compliant: >-
+      {{ 'banner' in cisco_compliance_banner_config.stdout[0] }}

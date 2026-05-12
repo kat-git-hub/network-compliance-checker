@@ -1,0 +1,11 @@
+---
+- name: Get ACL configuration
+  cisco.ios.ios_command:
+    commands:
+      - show running-config | include access-list
+  register: cisco_compliance_acl_config
+
+- name: Set ACL compliance
+  ansible.builtin.set_fact:
+    cisco_compliance_acl_compliant: >-
+      {{ 'access-list' in cisco_compliance_acl_config.stdout[0] }}

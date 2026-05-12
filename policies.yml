@@ -14,7 +14,6 @@ ntp:
 forbidden_services:
   - vsftpd
   - telnet
-  - rsh
 
 required_services:
   - ssh
