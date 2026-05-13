@@ -7,3 +7,4 @@ __pycache__/
 *.log
 reports/coverage/
 hosts.ini
+.coverage
