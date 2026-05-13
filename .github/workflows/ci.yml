@@ -48,6 +48,9 @@ jobs:
       - name: Generate SSH key
         run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
 
+      - name: Create hosts.ini from example
+        run: cp hosts.ini.example hosts.ini
+
       - name: Start containers
         run: docker compose up -d
 
