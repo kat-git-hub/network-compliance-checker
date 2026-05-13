@@ -1,8 +1,8 @@
 """
 conftest.py — dynamic host and policy loading.
-Reads hosts from hosts.ini, policies from policies.yml,
-and known violations from known_violations.yml.
+Reads hosts from hosts.ini and policies from policies.yml.
 Add your own devices to hosts.ini — no code changes needed.
+Linux hosts only — Cisco devices are tested via Ansible.
 """
 import os
 import warnings
@@ -15,6 +15,8 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 HOSTS_INI = os.path.join(ROOT, "hosts.ini")
 POLICIES_FILE = os.path.join(ROOT, "policies.yml")
 VIOLATIONS_FILE = os.path.join(ROOT, "known_violations.yml")
+
+LINUX_GROUPS = {"routers", "switches", "firewalls", "network_devices"}
 
 
 def load_policies() -> dict:
@@ -32,12 +34,26 @@ def load_known_violations() -> dict:
 
 
 def load_hosts() -> dict:
+    """Parse hosts.ini — Linux hosts only, skip Cisco devices."""
     hosts = {}
+    current_group = None
+    skip_group = False
+
     with open(HOSTS_INI) as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith("[") or line.startswith("#"):
+            if not line or line.startswith("#"):
                 continue
+
+            if line.startswith("["):
+                group = line.strip("[]")
+                current_group = group
+                skip_group = "cisco" in group.lower() or ":children" in group
+                continue
+
+            if skip_group:
+                continue
+
             parts = line.split()
             hostname = parts[0]
             params = {}
@@ -45,13 +61,20 @@ def load_hosts() -> dict:
                 if "=" in part:
                     k, v = part.split("=", 1)
                     params[k.strip()] = v.strip()
+
             if "ansible_port" not in params:
                 continue
+
+            # skip network_cli devices
+            if params.get("ansible_connection") == "network_cli":
+                continue
+
             hosts[hostname] = {
                 "host": params.get("ansible_host", "localhost"),
                 "port": int(params.get("ansible_port", 22)),
                 "user": params.get("ansible_user", "ubuntu"),
             }
+
     return hosts
 
 
@@ -62,11 +85,6 @@ def get_host(host: str, port: int, user: str):
             f"paramiko://{user}@{host}:{port}",
             ssh_identity_file=SSH_KEY,
         )
-
-
-def is_known_violation(device_name: str, check: str, violations: dict) -> str | None:
-    """Return reason string if violation is known, else None."""
-    return violations.get(device_name, {}).get(check)
 
 
 @pytest.fixture(scope="session")
