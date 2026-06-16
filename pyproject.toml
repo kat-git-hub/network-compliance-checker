@@ -8,8 +8,6 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "molecule (>=26.4.0,<27.0.0)",
-    "molecule-docker (>=2.1.0,<3.0.0)",
     "pytest (>=9.0.3,<10.0.0)",
     "pyyaml (>=6.0.3,<7.0.0)"
 ]

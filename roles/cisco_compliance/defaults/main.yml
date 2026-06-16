@@ -1,9 +1,7 @@
 ---
-# Cisco IOS Compliance Defaults
-# Override these in your playbook or group_vars
-
-cisco_compliance_ntp_server: ""          # e.g. "10.0.0.1"
 cisco_compliance_ssh_version: 2
-cisco_compliance_exec_timeout: 10        # minutes
+cisco_compliance_exec_timeout: 10
 cisco_compliance_login_local: true
 cisco_compliance_password_encryption: true
+cisco_compliance_ntp_server: ""        # e.g. "8.8.8.8"
+cisco_compliance_logging_server: ""    # e.g. "10.0.0.1"

@@ -51,3 +51,8 @@ full-run:
 
 full-report:
 	open reports/full_report.html
+
+fix-cisco:
+	@echo "WARNING: This will modify Cisco device configuration!"
+	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ]
+	poetry run ansible-playbook -i hosts.ini cisco_fix.yml

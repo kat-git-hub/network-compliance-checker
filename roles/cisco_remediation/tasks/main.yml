@@ -1,0 +1,55 @@
+---
+- name: Fix SSH version 2
+  cisco.ios.ios_config:
+    lines:
+      - ip ssh version 2
+  when: not cisco_compliance_ssh_version_compliant
+
+- name: Fix password encryption
+  cisco.ios.ios_config:
+    lines:
+      - service password-encryption
+  when: not cisco_compliance_password_encryption_compliant
+
+- name: Fix NTP server
+  cisco.ios.ios_config:
+    lines:
+      - ntp server {{ cisco_compliance_ntp_server }}
+  when:
+    - not cisco_compliance_ntp_compliant
+    - cisco_compliance_ntp_server is defined
+    - cisco_compliance_ntp_server != ""
+
+- name: Fix VTY exec-timeout
+  cisco.ios.ios_config:
+    parents: line vty 0 4
+    lines:
+      - exec-timeout {{ cisco_compliance_exec_timeout }} 0
+  when: not cisco_compliance_exec_timeout_compliant
+
+- name: Fix login local on VTY
+  cisco.ios.ios_config:
+    parents: line vty 0 4
+    lines:
+      - login local
+  when: not cisco_compliance_login_compliant
+
+- name: Fix logging
+  cisco.ios.ios_config:
+    lines:
+      - logging {{ cisco_compliance_logging_server }}
+  when:
+    - not cisco_compliance_logging_compliant
+    - cisco_compliance_logging_server is defined
+    - cisco_compliance_logging_server != ""
+
+- name: Fix banner motd
+  cisco.ios.ios_config:
+    lines:
+      - banner motd ^ Authorized access only ^
+  when: not cisco_compliance_banner_compliant
+
+- name: Save configuration
+  cisco.ios.ios_command:
+    commands:
+      - write memory
