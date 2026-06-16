@@ -21,6 +21,9 @@ down:
 run:
 	poetry run ansible-playbook -i hosts.ini site.yml
 
+run-cisco:
+	poetry run ansible-playbook -i hosts.ini cisco_site.yml
+
 test:
 	poetry run pytest tests/ -v
 

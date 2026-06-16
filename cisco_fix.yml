@@ -4,6 +4,13 @@
   gather_facts: false
   vars_files:
     - policies.yml
+  vars:
+    cisco_compliance_ssh_version: 2
+    cisco_compliance_exec_timeout: 10
+    cisco_compliance_login_local: true
+    cisco_compliance_password_encryption: true
+    cisco_compliance_ntp_server: ""
+    cisco_compliance_logging_server: ""
 
   roles:
     - cisco_compliance
@@ -13,6 +20,13 @@
   gather_facts: false
   vars_files:
     - policies.yml
+  vars:
+    cisco_compliance_ssh_version: 2
+    cisco_compliance_exec_timeout: 10
+    cisco_compliance_login_local: true
+    cisco_compliance_password_encryption: true
+    cisco_compliance_ntp_server: ""
+    cisco_compliance_logging_server: ""
 
   roles:
     - cisco_remediation

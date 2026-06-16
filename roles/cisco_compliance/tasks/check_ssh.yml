@@ -1,22 +1,23 @@
 ---
-- name: Get SSH configuration
+- name: Get SSH status
   cisco.ios.ios_command:
     commands:
-      - show running-config | include ip ssh
+      - show ip ssh
   register: cisco_compliance_ssh_config
 
 - name: Set SSH version compliance
   ansible.builtin.set_fact:
     cisco_compliance_ssh_version_compliant: >-
-      {{ 'ip ssh version ' + cisco_compliance_ssh_version | string in cisco_compliance_ssh_config.stdout[0] }}
+      {{ 'version ' + cisco_compliance_ssh_version | string in cisco_compliance_ssh_config.stdout[0] }}
 
-- name: Get VTY lines configuration
+- name: Get VTY 0 line status
   cisco.ios.ios_command:
     commands:
-      - show running-config | section line vty
+      - show line vty 0
   register: cisco_compliance_vty_config
 
 - name: Set VTY exec-timeout compliance
   ansible.builtin.set_fact:
     cisco_compliance_exec_timeout_compliant: >-
-      {{ 'exec-timeout' in cisco_compliance_vty_config.stdout[0] }}
+      {{ 'Idle EXEC' in cisco_compliance_vty_config.stdout[0]
+         and '00:00:00' not in (cisco_compliance_vty_config.stdout[0].split('Idle EXEC')[1].split()[0] | default('00:00:00')) }}

@@ -13,10 +13,11 @@
 - name: Get login configuration
   cisco.ios.ios_command:
     commands:
-      - show running-config | include login local
+      - show running-config | include login local|aaa authentication login
   register: cisco_compliance_login_config
 
 - name: Set login local compliance
   ansible.builtin.set_fact:
     cisco_compliance_login_compliant: >-
-      {{ 'login local' in cisco_compliance_login_config.stdout[0] }}
+      {{ 'login local' in cisco_compliance_login_config.stdout[0]
+         or 'aaa authentication login' in cisco_compliance_login_config.stdout[0] }}
