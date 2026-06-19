@@ -1,0 +1,33 @@
+{
+  "generated": "{{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}",
+  "linux_devices": {
+{% for host in ansible_play_hosts %}
+{% set h = hostvars[host] %}
+    "{{ host }}": {
+      "permit_root_login_disabled": {{ h.compliance_ssh_root_compliant | lower }},
+      "ssh_protocol2_enforced": {{ h.compliance_ssh_protocol_compliant | lower }},
+      "ntp_installed": {{ h.compliance_ntp_compliant | lower }},
+      "forbidden_services": {{ h.compliance_forbidden_services | to_json }}
+    }{{ "," if not loop.last else "" }}
+{% endfor %}
+  },
+  "cisco_devices": {
+{% for host in groups['cisco_devices'] %}
+{% set h = hostvars[host] %}
+    "{{ host }}": {
+{% if h.cisco_compliance_ssh_version_compliant is not defined %}
+      "unreachable": true
+{% else %}
+      "ssh_version2": {{ h.cisco_compliance_ssh_version_compliant | lower }},
+      "vty_exec_timeout": {{ h.cisco_compliance_exec_timeout_compliant | lower }},
+      "ntp_configured": {{ h.cisco_compliance_ntp_compliant | lower }},
+      "password_encryption": {{ h.cisco_compliance_password_encryption_compliant | lower }},
+      "login_local_or_aaa": {{ h.cisco_compliance_login_compliant | lower }},
+      "logging_configured": {{ h.cisco_compliance_logging_compliant | lower }},
+      "banner_configured": {{ h.cisco_compliance_banner_compliant | lower }},
+      "acl_configured": {{ h.cisco_compliance_acl_compliant | lower }}
+{% endif %}
+    }{{ "," if not loop.last else "" }}
+{% endfor %}
+  }
+}

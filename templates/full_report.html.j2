@@ -14,6 +14,7 @@
     tr:hover { background: #f9f9f9; }
     .pass { color: #27ae60; font-weight: bold; }
     .fail { color: #e74c3c; font-weight: bold; }
+    .unreachable { color: #999; font-style: italic; }
     .summary { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
     .card { background: white; padding: 20px 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .card h2 { margin: 0; font-size: 2em; }
@@ -28,7 +29,7 @@
   <h1>Network Compliance Report</h1>
   <p class="meta">Generated: {{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }} | Total devices: {{ ansible_play_hosts | length + groups['cisco_devices'] | length }}</p>
 
-  {% set total = namespace(pass=0, fail=0) %}
+  {% set total = namespace(pass=0, fail=0, unreachable=0) %}
   {% for host in ansible_play_hosts %}
     {% set h = hostvars[host] %}
     {% set forbidden_ok = h.compliance_forbidden_services.values() | list | min %}
@@ -41,7 +42,10 @@
 
   {% for host in groups['cisco_devices'] %}
     {% set h = hostvars[host] %}
-    {% if h.cisco_compliance_ssh_version_compliant and h.cisco_compliance_exec_timeout_compliant and h.cisco_compliance_ntp_compliant and h.cisco_compliance_password_encryption_compliant and h.cisco_compliance_login_compliant and h.cisco_compliance_logging_compliant and h.cisco_compliance_banner_compliant and h.cisco_compliance_acl_compliant %}
+    {% set cisco_ok = h.get('cisco_compliance_ssh_version_compliant') %}
+    {% if cisco_ok is none %}
+      {% set total.unreachable = total.unreachable + 1 %}
+    {% elif h.get('cisco_compliance_ssh_version_compliant') and h.get('cisco_compliance_exec_timeout_compliant') and h.get('cisco_compliance_ntp_compliant') and h.get('cisco_compliance_password_encryption_compliant') and h.get('cisco_compliance_login_compliant') and h.get('cisco_compliance_logging_compliant') and h.get('cisco_compliance_banner_compliant') and h.get('cisco_compliance_acl_compliant') %}
       {% set total.pass = total.pass + 1 %}
     {% else %}
       {% set total.fail = total.fail + 1 %}
@@ -57,6 +61,12 @@
       <h2>{{ total.fail }}</h2>
       <p>Non-compliant</p>
     </div>
+    {% if total.unreachable > 0 %}
+    <div class="card">
+      <h2 style="color:#999">{{ total.unreachable }}</h2>
+      <p>Unreachable</p>
+    </div>
+    {% endif %}
   </div>
 
   <h2 class="section-title">Linux Devices</h2>
@@ -104,19 +114,28 @@
     </tr>
     {% for host in groups['cisco_devices'] %}
     {% set h = hostvars[host] %}
-    {% set compliant = h.cisco_compliance_ssh_version_compliant and h.cisco_compliance_exec_timeout_compliant and h.cisco_compliance_ntp_compliant and h.cisco_compliance_password_encryption_compliant and h.cisco_compliance_login_compliant and h.cisco_compliance_logging_compliant and h.cisco_compliance_banner_compliant and h.cisco_compliance_acl_compliant %}
+    {% set cisco_ok = h.get('cisco_compliance_ssh_version_compliant') %}
+    {% if cisco_ok is none %}
     <tr>
       <td><strong>{{ host }}</strong></td>
-      <td class="{{ 'pass' if h.cisco_compliance_ssh_version_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_ssh_version_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_exec_timeout_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_exec_timeout_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_ntp_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_ntp_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_password_encryption_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_password_encryption_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_login_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_login_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_logging_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_logging_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_banner_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_banner_compliant else '✗' }}</td>
-      <td class="{{ 'pass' if h.cisco_compliance_acl_compliant else 'fail' }}">{{ '✓' if h.cisco_compliance_acl_compliant else '✗' }}</td>
+      <td colspan="8" class="unreachable">Device unreachable — last check incomplete</td>
+      <td class="unreachable">N/A</td>
+    </tr>
+    {% else %}
+    {% set compliant = h.get('cisco_compliance_ssh_version_compliant') and h.get('cisco_compliance_exec_timeout_compliant') and h.get('cisco_compliance_ntp_compliant') and h.get('cisco_compliance_password_encryption_compliant') and h.get('cisco_compliance_login_compliant') and h.get('cisco_compliance_logging_compliant') and h.get('cisco_compliance_banner_compliant') and h.get('cisco_compliance_acl_compliant') %}
+    <tr>
+      <td><strong>{{ host }}</strong></td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_ssh_version_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_ssh_version_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_exec_timeout_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_exec_timeout_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_ntp_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_ntp_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_password_encryption_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_password_encryption_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_login_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_login_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_logging_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_logging_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_banner_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_banner_compliant') else '✗' }}</td>
+      <td class="{{ 'pass' if h.get('cisco_compliance_acl_compliant') else 'fail' }}">{{ '✓' if h.get('cisco_compliance_acl_compliant') else '✗' }}</td>
       <td class="{{ 'pass' if compliant else 'fail' }}">{{ 'PASS' if compliant else 'FAIL' }}</td>
     </tr>
+    {% endif %}
     {% endfor %}
   </table>
 

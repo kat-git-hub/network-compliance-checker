@@ -14,9 +14,17 @@
   gather_facts: false
   vars_files:
     - policies.yml
+  any_errors_fatal: false
 
-  roles:
-    - cisco_compliance
+  tasks:
+    - name: Run cisco_compliance role
+      block:
+        - ansible.builtin.include_role:
+            name: cisco_compliance
+      rescue:
+        - name: Mark device as unreachable
+          ansible.builtin.debug:
+            msg: "{{ inventory_hostname }} unreachable — skipping compliance checks"
 
 - name: Generate Combined Report
   hosts: network_devices
@@ -42,9 +50,8 @@
 
     - name: Generate JSON report
       local_action:
-        module: copy
-        content: |
-          {{ (ansible_play_hosts + groups['cisco_devices']) | map('extract', hostvars) | list | to_nice_json }}
+        module: template
+        src: templates/report.json.j2
         dest: "{{ playbook_dir }}/reports/report.json"
       run_once: true
 
