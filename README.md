@@ -9,7 +9,7 @@
 A policy-driven compliance checker for network infrastructure. Define your security policies once — run checks across any number of devices automatically.
 
 ## How it works
-
+```
 policies.yml          →  what to check
 hosts.ini             →  where to check
 known_violations.yml  →  documented exceptions
@@ -19,6 +19,7 @@ Ansible checks all devices in parallel
 pytest verifies results
 ↓
 HTML + JSON reports
+```
 
 ## Quick start
 
